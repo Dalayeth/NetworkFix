@@ -1,0 +1,1 @@
+A simple mod that allows you to configure the packet queue size and bandwidth. Should make multiplayer less laggy.

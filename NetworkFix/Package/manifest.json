@@ -1,0 +1,9 @@
+{
+    "name": "NetworkFix",
+    "version_number": "1.0.0",
+    "website_url": "",
+    "description": "A mod that allows users to configure network variables.",
+    "dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.1600"
+    ]
+}
