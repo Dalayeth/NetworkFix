@@ -69,6 +69,13 @@
     <Compile Include="Patches\Network.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Package\icon.png" />
+    <Content Include="Package\NetworkFix.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Package\manifest.json" />
+    <None Include="Package\README.md" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -77,7 +77,7 @@ namespace NetworkFix.Patches
                     }
                 }
 #endif
-                NetworkFix.Log.LogInfo($"MaxQueueSize has been changed to {NetworkFix.MinBandwidth.Value}");
+                NetworkFix.Log.LogInfo($"MinBandwidth has been changed to {NetworkFix.MinBandwidth.Value}");
                 return instructions;
             }
         }
@@ -114,12 +114,12 @@ namespace NetworkFix.Patches
                     {
                         if (codes[i] != newCodes[i])
                         {
-                            NetworkFix.Log.LogDebug($"MinBandwidth has been changed from {codes[i].opcode}: {codes[i].operand} to {newCodes[i].opcode}: {newCodes[i].operand}");
+                            NetworkFix.Log.LogDebug($"MaxBandwidth has been changed from {codes[i].opcode}: {codes[i].operand} to {newCodes[i].opcode}: {newCodes[i].operand}");
                         }
                     }
                 }
 #endif
-                NetworkFix.Log.LogInfo($"MaxQueueSize has been changed to {NetworkFix.MaxBandwidth.Value}");
+                NetworkFix.Log.LogInfo($"MaxBandwidth has been changed to {NetworkFix.MaxBandwidth.Value}");
                 return instructions;
             }
         }
