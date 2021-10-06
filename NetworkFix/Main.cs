@@ -12,13 +12,17 @@ namespace NetworkFix
         public const string PluginAuthor = "Dalayeth";
         public const string PluginGuid = "com.github.dalayeth.Networkfix";
         public const string PluginName = "Network Fix";
-        public const string PluginVersion = "1.0.1.0";
+        public const string PluginVersion = "1.1.0";
 
         internal static ManualLogSource Log;
+        public static bool isServer { get; set; } = true;
+        public static bool isServerSet { get; set; } = false;
+        public static bool hasFailed { get; set; } = false;
 
-        internal static ConfigEntry<int> MaxQueueSize;
-        internal static ConfigEntry<int> MaxBandwidth;
-        internal static ConfigEntry<int> MinBandwidth;
+        internal static ConfigEntry<bool> ModEnabled;
+        internal static ConfigEntry<int> MaxSendQueueSize;
+        internal static ConfigEntry<int> SendRateMin;
+        internal static ConfigEntry<int> SendRateMax;
         #endregion
 
 
@@ -27,17 +31,28 @@ namespace NetworkFix
         private void Awake()
         {
             Log = Logger;
-            MaxQueueSize = Config.Bind("Networking", "MaxQueueSize", 30720, "The max queue possible. Default: 10,240.");
-            MinBandwidth = Config.Bind("Networking", "MinBandwidth", 153600, "The max bandwidth that Valheim will use. Default: 153,600 Max: 524,288");
-            MaxBandwidth = Config.Bind("Networking", "MaxBandwidth", 460800, "The max bandwidth that Valheim will use. Default: 153,600 Max: 524,288");
-            if (MaxBandwidth.Value > 524288) {MaxBandwidth.Value = 524288;}
-            if (MinBandwidth.Value > MaxBandwidth.Value) {MinBandwidth.Value = MaxBandwidth.Value;}
-            harmony.PatchAll();
+            ModEnabled = Config.Bind("Default", "Enabled", true);
+            MaxSendQueueSize = Config.Bind("Networking", "MaxSendQueueSize", 30720, "The max send queue possible. Default: 10,240.");
+            SendRateMin = Config.Bind("Networking", "SendRateMin", 524288, "Minimum send rate clamp. This value will control the min allowed sending rate that bandwidth estimation is allowed to reach.");
+            SendRateMax = Config.Bind("Networking", "SendRateMax", 524288, "Maximum send rate clamp. This value will control the max allowed sending rate that bandwidth estimation is allowed to reach.");
+            if (SendRateMax.Value < 0) { SendRateMax.Value = 0; }
+            if (SendRateMin.Value < 0) { SendRateMin.Value = 0; }
+            if (SendRateMax.Value != 0)
+            {
+                if (SendRateMin.Value > SendRateMax.Value) { SendRateMin.Value = SendRateMax.Value; }
+            }
+            if (ModEnabled.Value)
+            {
+                harmony.PatchAll();
+            }
         }
 
         private void OnDestroy()
         {
-            harmony.UnpatchSelf();
+            if (ModEnabled.Value)
+            {
+                harmony.UnpatchSelf();
+            }
         }
     }
 }
