@@ -23,3 +23,6 @@ Changelog:
 1.0.0
 	Initial commit.
 ```
+
+For developers just add your own game directory and the directory with your BepInEx folder into the "Directories.targets".
+Might be the same directory if so just put that in their twice. Then start the project and everything should be set up.
