@@ -80,7 +80,6 @@
   <ItemGroup>
     <None Include="Package\manifest.json" />
     <None Include="Package\README.md" />
-    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

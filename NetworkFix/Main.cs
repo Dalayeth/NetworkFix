@@ -32,9 +32,9 @@ namespace NetworkFix
             #region[Config]
             Log = Logger;
             ModEnabled = Config.Bind("Default", "Enabled", true);
-            MaxSendQueueSize = Config.Bind("Networking", "MaxSendQueueSize", 30720, "The max send queue possible. Default: 10,240.");
-            SendRateMin = Config.Bind("Networking", "SendRateMin", 524288, "Minimum send rate clamp. This value will control the min allowed sending rate that bandwidth estimation is allowed to reach. Default 153,600");
-            SendRateMax = Config.Bind("Networking", "SendRateMax", 524288, "Maximum send rate clamp. This value will control the max allowed sending rate that bandwidth estimation is allowed to reach. Default 153,600");
+            MaxSendQueueSize = Config.Bind("Networking", "MaxSendQueueSize", 30720, "The max send queue possible. Game default: 10,240.");
+            SendRateMin = Config.Bind("Networking", "SendRateMin", 524288, "Minimum send rate clamp. This value will control the min allowed sending rate that bandwidth estimation is allowed to reach. Game default: 153,600");
+            SendRateMax = Config.Bind("Networking", "SendRateMax", 524288, "Maximum send rate clamp. This value will control the max allowed sending rate that bandwidth estimation is allowed to reach. Game default: 153,600");
             if (SendRateMax.Value < 0) { SendRateMax.Value = 0; }
             if (SendRateMin.Value < 0) { SendRateMin.Value = 0; }
             if (SendRateMax.Value != 0)
