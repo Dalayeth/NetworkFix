@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <GameDir></GameDir>
-    <BepInEx></BepInEx>
+    <GameDir>B:\SteamLibrary\steamapps\common\Valheim</GameDir>
+    <BepInEx>C:\Users\God\AppData\Roaming\r2modmanPlus-local\Valheim\profiles\Hearth and Home Plus</BepInEx>
   </PropertyGroup>
 </Project>
