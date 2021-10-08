@@ -1,6 +1,6 @@
 {
   "name": "NetworkFix",
-  "version_number": "1.1.0",
+  "version_number": "1.1.1",
   "website_url": "https://github.com/Dalayeth/NetworkFix",
   "description": "A mod that allows users to configure network variables.",
   "dependencies": [

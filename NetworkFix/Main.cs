@@ -13,7 +13,7 @@ namespace NetworkFix
         public const string PluginAuthor = "Dalayeth";
         public const string PluginGuid = "com.github.dalayeth.Networkfix";
         public const string PluginName = "Network Fix";
-        public const string PluginVersion = "1.1.0";
+        public const string PluginVersion = "1.1.1";
 
         internal static ManualLogSource Log;
         public static bool isServer { get; set; } = true;
