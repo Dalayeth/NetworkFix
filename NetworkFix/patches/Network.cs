@@ -47,6 +47,21 @@ namespace NetworkFix.Patches
             {
                 NetworkFix.isServer = ___m_isServer;
                 NetworkFix.isZNetAwake = true;
+#if DEBUG
+                NetworkFix.Log.LogDebug($"IsServer set to: {NetworkFix.isServer}");
+#endif
+            }
+        }
+
+        [HarmonyPatch]
+        static class OnDestroyPatch
+        {
+            [HarmonyPrefix]
+            [HarmonyPatch(typeof(ZNet), "OnDestroy")]
+            static void OnDestroy()
+            {
+                NetworkFix.isServer = true;
+                NetworkFix.isZNetAwake = false;
             }
         }
 
@@ -57,14 +72,30 @@ namespace NetworkFix.Patches
             [HarmonyPatch(typeof(ZSteamSocket), "RegisterGlobalCallbacks")]
             static void RegisterGlobalCallbacks()
             {
-                if (!NetworkFix.isZNetAwake) { return; }
+                if (NetworkFix.hasFailed || !NetworkFix.isZNetAwake) { return; }
                 if (NetworkFix.isServer)
                 {
-                    ServerPatch();
+                    try
+                    {
+                        ServerPatch();
+                    }
+                    catch
+                    {
+                        NetworkFix.Log.LogWarning($"Failed to patch server bandwidth. Disabling bandwidth patch.");
+                        NetworkFix.hasFailed = true;
+                    }
                 }
                 else
                 {
-                    GamePatch();
+                    try
+                    {
+                        ClientPatch();
+                    }
+                    catch
+                    {
+                        NetworkFix.Log.LogWarning($"Failed to patch client bandwidth. Disabling bandwidth patch.");
+                        NetworkFix.hasFailed = true;
+                    }
                 }
             }
         }
@@ -92,33 +123,49 @@ namespace NetworkFix.Patches
 
         static void ServerPatch()
         {
-            GCHandle SendRateMin = GCHandle.Alloc(NetworkFix.SendRateMin.Value, GCHandleType.Pinned);
-            GCHandle SendRateMax = GCHandle.Alloc(NetworkFix.SendRateMax.Value, GCHandleType.Pinned);
-            SteamGameServerNetworkingUtils.SetConfigValue(ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendRateMin, ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Global, IntPtr.Zero, ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32, SendRateMin.AddrOfPinnedObject());
-            NetworkFix.Log.LogInfo($"SendRateMin has been changed to {NetworkFix.SendRateMin.Value}");
-            SteamGameServerNetworkingUtils.SetConfigValue(ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendRateMax, ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Global, IntPtr.Zero, ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32, SendRateMax.AddrOfPinnedObject());
-            NetworkFix.Log.LogInfo($"SendRateMax has been changed to {NetworkFix.SendRateMax.Value}");
-            if (NetworkFix.SendRateMax.Value > 524288)
+            try
             {
-                NetworkFix.Log.LogInfo($"SendRateMax has been set over the default Steam SendBufferSize.");
-                SteamGameServerNetworkingUtils.SetConfigValue(ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendBufferSize, ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Global, IntPtr.Zero, ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32, SendRateMax.AddrOfPinnedObject());
-                NetworkFix.Log.LogInfo($"Steam's SendBufferSize has been changed to {NetworkFix.SendRateMax.Value}");
+                GCHandle SendRateMin = GCHandle.Alloc(NetworkFix.SendRateMin.Value, GCHandleType.Pinned);
+                GCHandle SendRateMax = GCHandle.Alloc(NetworkFix.SendRateMax.Value, GCHandleType.Pinned);
+                SteamGameServerNetworkingUtils.SetConfigValue(ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendRateMin, ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Global, IntPtr.Zero, ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32, SendRateMin.AddrOfPinnedObject());
+                NetworkFix.Log.LogInfo($"Server's SendRateMin has been changed to {NetworkFix.SendRateMin.Value}");
+                SteamGameServerNetworkingUtils.SetConfigValue(ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendRateMax, ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Global, IntPtr.Zero, ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32, SendRateMax.AddrOfPinnedObject());
+                NetworkFix.Log.LogInfo($"Server's SendRateMax has been changed to {NetworkFix.SendRateMax.Value}");
+                if (NetworkFix.SendRateMax.Value > 524288)
+                {
+                    NetworkFix.Log.LogInfo($"Server's SendRateMax has been set over the default Steam SendBufferSize.");
+                    SteamGameServerNetworkingUtils.SetConfigValue(ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendBufferSize, ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Global, IntPtr.Zero, ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32, SendRateMax.AddrOfPinnedObject());
+                    NetworkFix.Log.LogInfo($"Steam's SendBufferSize has been changed to {NetworkFix.SendRateMax.Value}");
+                }
+                SendRateMin.Free();
+                SendRateMax.Free();
             }
-            SendRateMin.Free();
-            SendRateMax.Free();
+            catch
+            {
+                NetworkFix.Log.LogInfo($"Local Server detected. Now patching for client.");
+                try
+                {
+                    ClientPatch();
+                }
+                catch
+                {
+                    NetworkFix.Log.LogWarning($"Failed to patch client bandwidth. Disabling bandwidth patch.");
+                    NetworkFix.hasFailed = true;
+                }
+            }
         }
 
-        static void GamePatch()
+        static void ClientPatch()
         {
             GCHandle SendRateMin = GCHandle.Alloc(NetworkFix.SendRateMin.Value, GCHandleType.Pinned);
             GCHandle SendRateMax = GCHandle.Alloc(NetworkFix.SendRateMax.Value, GCHandleType.Pinned);
             SteamNetworkingUtils.SetConfigValue(ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendRateMin, ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Global, IntPtr.Zero, ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32, SendRateMin.AddrOfPinnedObject());
-            NetworkFix.Log.LogInfo($"SendRateMin has been changed to {NetworkFix.SendRateMin.Value}");
+            NetworkFix.Log.LogInfo($"Client's SendRateMin has been changed to {NetworkFix.SendRateMin.Value}");
             SteamNetworkingUtils.SetConfigValue(ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendRateMax, ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Global, IntPtr.Zero, ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32, SendRateMax.AddrOfPinnedObject());
-            NetworkFix.Log.LogInfo($"SendRateMax has been changed to {NetworkFix.SendRateMax.Value}");
+            NetworkFix.Log.LogInfo($"Client's SendRateMax has been changed to {NetworkFix.SendRateMax.Value}");
             if (NetworkFix.SendRateMax.Value > 524288)
             {
-                NetworkFix.Log.LogInfo($"SendRateMax has been set over the default Steam SendBufferSize.");
+                NetworkFix.Log.LogInfo($"Client's SendRateMax has been set over the default Steam SendBufferSize.");
                 SteamNetworkingUtils.SetConfigValue(ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendBufferSize, ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Global, IntPtr.Zero, ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32, SendRateMax.AddrOfPinnedObject());
                 NetworkFix.Log.LogInfo($"Steam's SendBufferSize has been changed to {NetworkFix.SendRateMax.Value}");
             }
