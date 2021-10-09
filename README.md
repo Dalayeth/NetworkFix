@@ -8,6 +8,11 @@ If you have any issues with this mod please post them to [https://github.com/Dal
 
 Changelog:
 ```
+1.1.1
+	Adding a fix for detecting local servers.
+	Adding some try/catch blocks to ensure code is executed safely.
+	Added code to detect ZNet being destroyed. Should make things safer.
+
 1.1.0
 	***It is recommended you delete your config for version 1.1.0***
 	Changed from modifying RegisterGlobalCallbacks function with a transpilier to a postfix.
